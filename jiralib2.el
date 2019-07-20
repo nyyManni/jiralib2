@@ -4,7 +4,7 @@
 
 ;; Author: Henrik Nyman <h@nyymanni.com>
 ;; URL: https://github.com/nyyManni/jiralib2
-;; Keywords: calendar, data, org, jira
+;; Keywords: comm, jira, rest, api
 ;; Version: 1.0
 ;; Package-Requires: ((emacs "25") (request "0.3"))
 
