@@ -66,7 +66,7 @@ This is maintained by `jiralib2-login'.")
   "Contains the cookie of the active JIRA session.")
 
 (defun jiralib2-session-login (&optional username password)
-  "Login to JIRA with USERNAME and PASSWORD. Save cookie in jiralib2--session."
+  "Login to JIRA with USERNAME and PASSWORD. Save cookie in `jiralib2--session'."
   (interactive)
   (setq jiralib2--session
         (let* ((username (or username
