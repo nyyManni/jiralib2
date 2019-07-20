@@ -1,9 +1,9 @@
-;;; jiralib2.el --- Provide connectivity to JIRA REST services.
+;;; jiralib2.el --- JIRA REST API bindings to Elisp
 
 ;; Copyright (C) 2017 Henrik Nyman
 
 ;; Author: Henrik Nyman <h@nyymanni.com>
-;; URL: https://github.com/nyyManni/ejira
+;; URL: https://github.com/nyyManni/jiralib2
 ;; Keywords: calendar, data, org, jira
 ;; Version: 1.0
 ;; Package-Requires: ((emacs "25") (request "0.3"))
