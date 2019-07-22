@@ -2,6 +2,8 @@
 
 This is the backend used by Ejira, which is now pulled out into its own package.
 
+| Jiralib2 is developed against a JIRA Server instance, not a JIRA cloud instance. This is the case simply because our company is using a self-hosted JIRA and that is what I develop against. Contributions for evaluating and/or making this work with a JIRA Cloud setup would be greatly appreciated.
+
 ** Basic configuration
 #+BEGIN_SRC elisp
   (use-package jiralib2
