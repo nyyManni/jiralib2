@@ -236,6 +236,10 @@ Use TIMESTAMP as start time and SECONDS as amount of logged work in seconds."
                                               (started . ,timestamp)
                                               (timeSpentSeconds . ,seconds)))))
 
+(defun jiralib2-get-project (key)
+  "Get details of project KEY."
+  (jiralib2-session-call (format "/rest/api/2/project/%s" key)))
+
 (defvar jiralib2--projects-cache nil)
 (defun jiralib2-get-projects ()
   "Get a list of all projects."
