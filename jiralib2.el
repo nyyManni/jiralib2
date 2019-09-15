@@ -53,10 +53,21 @@
   "Jiralib2 customization group."
   :group 'applications)
 
-(defcustom jiralib2-url "http://localhost:8081/"
+(defcustom jiralib2-url "http://localhost:8080/"
   "The address of the jira host."
   :type 'string
   :group 'jiralib2)
+
+(defcustom jiralib2-auth 'cookie
+  "Authentication mode for JIRA."
+  :group 'jiralib2
+  :type '(choice
+	  (const :tag "Cookie authentication" cookie)
+	  (const :tag "Token authentication" token)
+	  (const :tag "Basic authentication" basic)))
+
+(defvar jiralib2-token nil
+  "Authentication token used by token auth.")
 
 (defvar jiralib2-user-login-name nil
   "The name of the user logged into JIRA.
@@ -73,21 +84,33 @@ This is maintained by `jiralib2-login'.")
                              jiralib2-user-login-name
                              (read-string "Username: ")))
                (password (or password
-                             (read-passwd (format "Password for user %s: "
-                                                  username))))
-               (reply-data (request (concat jiralib2-url "/rest/auth/1/session")
-                                    :type "POST"
-                                    :headers `(("Content-Type" . "application/json"))
-                                    :parser 'json-read
-                                    :sync t
-                                    :data (json-encode `((username . ,username)
-                                                         (password . ,password)))))
-               (status-code (request-response-status-code reply-data))
-               (auth-info (cdar (jiralib2--verify-status reply-data)))
-               (session-token (format "%s=%s"
-                                      (cdr (assoc 'name auth-info))
-                                      (cdr (assoc 'value auth-info)))))
-          session-token)))
+                             (and (eq jiralib2-auth 'token) jiralib2-token)
+                             (read-passwd (format "Password or token for user %s: "
+                                                  username)))))
+          (cond ((member jiralib2-auth '(basic token))
+                 (base64-encode-string (format "%s:%s" username password)))
+                ((eq jiralib2-auth 'cookie)
+                 (let* ((reply-data
+                         (request (concat jiralib2-url "/rest/auth/1/session")
+                                  :type "POST"
+                                  :headers `(("Content-Type" . "application/json"))
+                                  :parser 'json-read
+                                  :sync t
+                                  :data (json-encode `((username . ,username)
+                                                       (password . ,password)))))
+                        (status-code (request-response-status-code reply-data))
+                        (auth-info (cdar (jiralib2--verify-status reply-data)))
+                        (session-token (format "%s=%s"
+                                               (cdr (assoc 'name auth-info))
+                                               (cdr (assoc 'value auth-info)))))
+                   session-token))))))
+
+(defun jiralib2-session-logout ()
+  "Close the current session."
+  (when (eq jiralib2-auth 'cookie)
+    (jiralib2-session-call "/rest/auth/1/session"
+                           :type "DELETE"))
+  (setq jiralib2--session nil))
 
 (defun jiralib2--verify-status (response)
   "Check status code of RESPONSE, return data or throw an error."
@@ -125,7 +148,11 @@ This is maintained by `jiralib2-login'.")
 Does not check for session validity."
   (apply #'request (concat jiralib2-url path)
          :headers `(("Content-Type" . "application/json")
-                    ("cookie" . ,jiralib2--session))
+                    ,(cond ((eq jiralib2-auth 'cookie)
+                            `("cookie" . ,jiralib2--session))
+                           ((member jiralib2-auth '(basic token))
+                            `("Authorization" . ,(format "Basic %s"
+                                                         jiralib2--session)))))
          :sync t
          :parser 'json-read
          args))
