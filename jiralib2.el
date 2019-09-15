@@ -172,6 +172,11 @@ If no session exists, or it has expired, login first."
                          :type "PUT"
                          :data (json-encode `((body . ,body)))))
 
+(defun jiralib2-get-comment (issue-key comment-id)
+  "Get comment COMMENT-ID of issue ISSUE-KEY."
+  (jiralib2-session-call (format "/rest/api/2/issue/%s/comment/%s"
+                                 issue-key comment-id)))
+
 (defvar jiralib2--users-cache nil)
 (defun jiralib2-get-users (project-key)
   "Return assignable users information given the PROJECT-KEY."
