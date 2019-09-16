@@ -28,14 +28,13 @@
 ;; This file provides a programatic interface to JIRA.  It provides access to
 ;; JIRA from other programs, but no user level functionality.
 
-;; jiralib2.el uses cookie authentication instead of basic auth for performance
-;; reasons. JIRA API has an artificial delay of ~second in basic auth queries.
-;; The session cookie is stored in an Emacs global variable, and it is
-;; automatically used in each query. If the user has not logged in, or the
-;; session has expired, a new login is performed and the password queried from
-;; the user. jiralib2 DOES NOT store user's password anywhere like jiralib did.
-;; Only the session token is saved, and user credentials cannot be extracted
-;; from it.
+;; jiralib2 supports three methods of authentication: cookie, basic and token.
+;; Cookie auth is the same which is used in the browser, and works by
+;; requesting a session id from the API. Basic auth works by including the
+;; Authorization-header in all the requests. Token authentication is similar
+;; to the basic authentication, but uses a server-side generated token instead
+;; of the password, and is only available with JIRA Cloud.
+;; OAuth login is not supported.
 
 ;; Jira References:
 
