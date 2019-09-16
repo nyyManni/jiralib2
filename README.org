@@ -1,5 +1,5 @@
+[[https://melpa.org/#/jiralib2][file:https://melpa.org/packages/jiralib2-badge.svg]]
 * JIRA REST API bindings to elisp
-
 This is the backend used by Ejira, which is now pulled out into its own package.
 
 ** Basic configuration
