@@ -109,16 +109,20 @@ This is maintained by `jiralib2-login'.")
   (when (eq jiralib2-auth 'cookie)
     (jiralib2-session-call "/rest/auth/1/session"
                            :type "DELETE"))
-  (setq jiralib2--session nil))
+
+  (setq jiralib2--issuetypes-cache nil
+        jiralib2--projects-cache   nil
+        jiralib2--users-cache      nil
+        jiralib2--session          nil))
 
 (defun jiralib2--verify-status (response)
   "Check status code of RESPONSE, return data or throw an error."
   (let ((status-code (request-response-status-code response)))
     (cond ((not status-code)
-           (user-error "Login failed: Could not reach the server"))
+           (user-error "Request failed: Could not reach the server"))
 
           ((= status-code 401)
-           (user-error "Login failed: invalid password"))
+           (user-error "Request failed: invalid password"))
 
           ;; Several failed password attempts require you to answer
           ;; a captcha, that must be done in the browser.
@@ -126,21 +130,31 @@ This is maintained by `jiralib2-login'.")
            (user-error "Login denied: please login in the browser"))
 
           ((= status-code 404)
-           (user-error "Login failed: Wrong URL path"))
+           (user-error "Request failed: Wrong URL path"))
 
           ((and (>= status-code 400) (< status-code 500))
-           (user-error "Login failed: invalid request"))
+           (user-error "Request failed: invalid request: %s"
+                       (request-response-data response)))
 
           ((>= status-code 500)
-           (error "Login failed: Server error"))
+           (error "Request failed: Server error"))
 
           ;; status codes 200 - 399 should be ok.
           (t (request-response-data response)))))
 
-
 (defun jiralib2-get-user-info ()
   "Fetch information on currently logged in user."
   (jiralib2-session-call "/rest/api/2/myself"))
+
+(defun jiralib2-verify-setup ()
+  "Verify that server and login are configured correctly."
+  (interactive)
+  (let ((info (jiralib2-get-user-info)))
+    (message
+     "Successfully logged in\n\nUsername:  %s\nFull Name: %s\nEmail:     %s"
+     (alist-get 'name info)
+     (alist-get 'displayName info)
+     (alist-get 'emailAddress info))))
 
 (defun jiralib2--session-call (path args)
   "Do a call to PATH with ARGS using current session.
@@ -280,29 +294,41 @@ Use TIMESTAMP as start time and SECONDS as amount of logged work in seconds."
 
 (defvar jiralib2--issuetypes-cache nil)
 (defun jiralib2-get-issuetypes ()
-  "Get a list of all projects."
+  "Get a list of all issuetypes."
   (or jiralib2--issuetypes-cache
       (setq jiralib2--issuetypes-cache
             (jiralib2-session-call "/rest/api/2/issuetype"))))
 
-(defun jiralib2-create-issue (project-id summary description)
-  "Create a new issue into project PROJECT-ID with SUMMARY and DESCRIPTION."
+(defun jiralib2-create-issue (project-id type summary description &rest args)
+  "Create a new issue.
+Issue of type TYPE gets created in PROJECT-ID with SUMMARY and DESCRIPTION.
+ARGS is an association list containing extra attributes for the call."
   (jiralib2-session-call "/rest/api/2/issue/"
                          :type "POST"
                          :data (json-encode
-                                `((fields . ((project . ,project-id)
+                                `((fields . ((project . ((key . ,project-id)))
+                                             (issuetype . ((name . ,type)))
                                              (summary . ,summary)
-                                             (description . ,description)))))))
+                                             (description . ,description)
+                                             ,@args))))))
 
-(defun jiralib2-update-summary-description (issue-id summary description)
-  "Change the summary and description of issue ISSUE-ID to SUMMARY and DESCRIPTION."
-  (interactive)
+(defun jiralib2-update-issue (issue-id &rest args)
+  "Update the issue ISSUE-ID with data ARGS.
+ARGS is an association list of the fields to set for the issue."
   (jiralib2-session-call (format "/rest/api/2/issue/%s" issue-id)
                          :type "PUT"
                          :data (json-encode
-                                `((fields . ((description . ,description)
-                                             (summary . ,summary)))))))
+                                `((fields . ,args)))))
 
+(defun jiralib2-update-summary-description (issue-id summary description)
+  "Change the summary and description of issue ISSUE-ID to SUMMARY and DESCRIPTION."
+  (jiralib2-update-issue issue-id
+                         `(description . ,description)
+                         `(summary . ,summary)))
+
+(defun jiralib2-set-issue-type (issue-id type)
+  "Change the issue type of ISSUE-ID to TYPE."
+  (jiralib2-update-issue issue-id `(issuetype . ((name . ,type)))))
 
 (provide 'jiralib2)
 ;;; jiralib2.el ends here
