@@ -222,8 +222,14 @@ If no session exists, or it has expired, login first."
   "Return assignable users information given the PROJECT-KEY."
   (or jiralib2--users-cache
       (jiralib2-session-call
-       (format "/rest/api/2/user/assignable/search?project=%s&maxResults=10000"
+       (format "/rest/api/2/user/assignable/search?project=%s&maxResults=1000"
                project-key))))
+
+(defun jiralib2-get-assignable-users (issue-key)
+  "Get the assignable users for ISSUE-KEY."
+  (jiralib2-session-call
+   (format "/rest/api/2/user/assignable/search?issueKey=%s&maxResults=1000"
+           issue-key)))
 
 (defun jiralib2-assign-issue (issue-key username)
   "Assign issue with ISSUE-KEY to USERNAME."
@@ -233,12 +239,11 @@ If no session exists, or it has expired, login first."
 
 (defun jiralib2-do-jql-search (jql &optional limit)
   "Run a JQL query and return the list of issues that matched.
-LIMIT is the maximum number of queries to return.  Note that JIRA
-has an internal limit of how many queries to return, as such, it
-might not be possible to find *ALL* the issues that match a
-query."
+LIMIT is the maximum number of queries to return. Note that JIRA has an internal
+limit of how many queries to return, as such, it might not be possible to find
+*ALL* the issues that match a query."
   (unless (or limit (numberp limit))
-    (setq limit 100))
+    (setq limit 1000))
   (append
    (cdr
     (assoc 'issues
@@ -248,7 +253,6 @@ query."
                                          `((jql . ,jql)
                                            (maxResults . ,limit))))))
    nil))
-
 
 (defun jiralib2-get-actions (issue-key)
   "Get available actions for the issue ISSUE-KEY.
