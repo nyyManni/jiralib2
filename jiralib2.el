@@ -65,6 +65,9 @@
 	  (const :tag "Token authentication" token)
 	  (const :tag "Basic authentication" basic)))
 
+(defvar jiralib2-json-array-type 'list
+  "Set the sequene type used for json parsing.")
+
 (defvar jiralib2-token nil
   "Authentication token used by token auth.")
 
@@ -89,7 +92,8 @@ This is maintained by `jiralib2-login'.")
           (cond ((member jiralib2-auth '(basic token))
                  (base64-encode-string (format "%s:%s" username password)))
                 ((eq jiralib2-auth 'cookie)
-                 (let* ((reply-data
+                 (let* ((json-array-type jiralib2-json-array-type)
+                        (reply-data
                          (request (concat jiralib2-url "/rest/auth/1/session")
                                   :type "POST"
                                   :headers `(("Content-Type" . "application/json"))
@@ -159,16 +163,17 @@ This is maintained by `jiralib2-login'.")
 (defun jiralib2--session-call (path args)
   "Do a call to PATH with ARGS using current session.
 Does not check for session validity."
-  (apply #'request (concat jiralib2-url path)
-         :headers `(("Content-Type" . "application/json")
-                    ,(cond ((eq jiralib2-auth 'cookie)
-                            `("cookie" . ,jiralib2--session))
-                           ((member jiralib2-auth '(basic token))
-                            `("Authorization" . ,(format "Basic %s"
-                                                         jiralib2--session)))))
-         :sync t
-         :parser 'json-read
-         args))
+  (let ((json-array-type jiralib2-json-array-type))
+    (apply #'request (concat jiralib2-url path)
+           :headers `(("Content-Type" . "application/json")
+                      ,(cond ((eq jiralib2-auth 'cookie)
+                              `("cookie" . ,jiralib2--session))
+                             ((member jiralib2-auth '(basic token))
+                              `("Authorization" . ,(format "Basic %s"
+                                                           jiralib2--session)))))
+           :sync t
+           :parser 'json-read
+           args)))
 
 (defun jiralib2-session-call (path &rest args)
   "Do a call to PATH with ARGS using current session.
