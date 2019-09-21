@@ -246,7 +246,9 @@ If no session exists, or it has expired, login first."
   "Run a JQL query and return the list of issues that matched.
 LIMIT is the maximum number of queries to return. Note that JIRA has an internal
 limit of how many queries to return, as such, it might not be possible to find
-*ALL* the issues that match a query."
+*ALL* the issues that match a query.
+
+DEPRECATED, use `jiralib2-jql-search' instead."
   (unless (or limit (numberp limit))
     (setq limit 1000))
   (append
@@ -258,6 +260,27 @@ limit of how many queries to return, as such, it might not be possible to find
                                          `((jql . ,jql)
                                            (maxResults . ,limit))))))
    nil))
+
+(defun jiralib2-jql-search (jql &rest fields)
+  "Run a JQL query and return the list of issues that matched.
+FIELDS specify what fields to fecth.
+JIRA has a limit on how many issues can be retrieved at once, and if the query
+matches for more than that, all the results are fetched with multiple queries."
+  (let ((total nil)
+        (offset 0)
+        (issues nil))
+    (while (or (not total) (< (length issues) total))
+      (let ((reply (jiralib2-session-call "/rest/api/2/search"
+                                    :type "POST"
+                                    :data (json-encode
+                                           `((jql . ,jql)
+                                             (startAt . ,offset)
+                                             (maxResults . 1000)
+                                             (fields . ,fields))))))
+        (unless total (setq total (alist-get 'total reply)))
+        (setq issues (-concat issues (alist-get 'issues reply)))
+        (setq offset (length issues))))
+    issues))
 
 (defun jiralib2-get-actions (issue-key)
   "Get available actions for the issue ISSUE-KEY.
