@@ -57,6 +57,11 @@
   :type 'string
   :group 'jiralib2)
 
+(defcustom jiralib2-user-login-name nil
+  "Username to use to login into JIRA."
+  :group 'jiralib2
+  :type 'string)
+
 (defcustom jiralib2-auth 'cookie
   "Authentication mode for JIRA."
   :group 'jiralib2
@@ -70,10 +75,6 @@
 
 (defvar jiralib2-token nil
   "Authentication token used by token auth.")
-
-(defvar jiralib2-user-login-name nil
-  "The name of the user logged into JIRA.
-This is maintained by `jiralib2-login'.")
 
 (defvar jiralib2--session nil
   "Contains the cookie of the active JIRA session.")
