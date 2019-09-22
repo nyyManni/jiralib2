@@ -109,17 +109,6 @@
                                                (cdr (assoc 'value auth-info)))))
                    session-token))))))
 
-(defun jiralib2-session-logout ()
-  "Close the current session."
-  (when (eq jiralib2-auth 'cookie)
-    (jiralib2-session-call "/rest/auth/1/session"
-                           :type "DELETE"))
-
-  (setq jiralib2--issuetypes-cache nil
-        jiralib2--projects-cache   nil
-        jiralib2--users-cache      nil
-        jiralib2--session          nil))
-
 (defun jiralib2--verify-status (response)
   "Check status code of RESPONSE, return data or throw an error."
   (let ((status-code (request-response-status-code response)))
@@ -362,6 +351,17 @@ ARGS is an association list of the fields to set for the issue."
 (defun jiralib2-set-issue-type (issue-id type)
   "Change the issue type of ISSUE-ID to TYPE."
   (jiralib2-update-issue issue-id `(issuetype . ((name . ,type)))))
+
+(defun jiralib2-session-logout ()
+  "Close the current session."
+  (when (eq jiralib2-auth 'cookie)
+    (jiralib2-session-call "/rest/auth/1/session"
+                           :type "DELETE"))
+
+  (setq jiralib2--issuetypes-cache nil
+        jiralib2--projects-cache   nil
+        jiralib2--users-cache      nil
+        jiralib2--session          nil))
 
 (provide 'jiralib2)
 ;;; jiralib2.el ends here
