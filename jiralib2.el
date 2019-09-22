@@ -43,7 +43,6 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'cl-lib))
 (require 'request)
 (require 'dash)
 (require 'json)
