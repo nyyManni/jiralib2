@@ -6,7 +6,7 @@
 ;; URL: https://github.com/nyyManni/jiralib2
 ;; Keywords: comm, jira, rest, api
 ;; Version: 1.0
-;; Package-Requires: ((emacs "25") (request "0.3"))
+;; Package-Requires: ((emacs "25") (request "0.3") (dash "2.14.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -45,6 +45,7 @@
 
 (eval-when-compile (require 'cl-lib))
 (require 'request)
+(require 'dash)
 (require 'json)
 (require 'url-parse)
 
