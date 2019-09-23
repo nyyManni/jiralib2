@@ -79,6 +79,9 @@
 (defvar jiralib2--session nil
   "Contains the cookie of the active JIRA session.")
 
+(defvar jiralib2-post-login-hook nil
+  "Run after a successful login has been performed.")
+
 (defun jiralib2-session-login (&optional username password)
   "Login to JIRA with USERNAME and PASSWORD. Save cookie in `jiralib2--session'."
   (interactive)
@@ -107,7 +110,8 @@
                         (session-token (format "%s=%s"
                                                (cdr (assoc 'name auth-info))
                                                (cdr (assoc 'value auth-info)))))
-                   session-token))))))
+                   session-token)))))
+  (run-hooks 'jiralib2-post-login-hook))
 
 (defun jiralib2--verify-status (response)
   "Check status code of RESPONSE, return data or throw an error."
