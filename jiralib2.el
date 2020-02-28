@@ -216,12 +216,6 @@ If no session exists, or it has expired, login first."
   (jiralib2-session-call (format "/rest/api/2/issue/%s/comment/%s"
                                  issue-key comment-id)))
 
-(defun print-elements-of-list (list)
-  "Print each element of LIST on a line of its own."
-  (while list
-    (print (car list))
-    (setq list (cdr list))))
-
 
 (defun jiralib2--get-users (project-key)
   "Download assignable users information given the PROJECT-KEY."
