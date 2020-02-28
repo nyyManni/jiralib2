@@ -248,7 +248,7 @@ If no session exists, or it has expired, login first."
         (users nil)
         (max-results 1000)
         (results nil)
-        (fmt "/rest/api/2/user/assignable/search?issueKey=%s&maxResults=%d&startAt%d"))
+        (fmt "/rest/api/2/user/assignable/search?issueKey=%s&maxResults=%d&startAt=%d"))
 
     (setq results (jiralib2-session-call (format fmt issue-key max-results offset))
           users (append users results)
