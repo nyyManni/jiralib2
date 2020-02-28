@@ -216,19 +216,57 @@ If no session exists, or it has expired, login first."
   (jiralib2-session-call (format "/rest/api/2/issue/%s/comment/%s"
                                  issue-key comment-id)))
 
+(defun print-elements-of-list (list)
+  "Print each element of LIST on a line of its own."
+  (while list
+    (print (car list))
+    (setq list (cdr list))))
+
+
+(defun jiralib2--get-users (project-key)
+  "Download assignable users information given the PROJECT-KEY."
+  (let ((offset 0)
+        (users nil)
+        (max-results 1000)
+        (results nil)
+        (fmt "/rest/api/2/user/assignable/search?project=%s&maxResults=%d&startAt=%d"))
+
+    (setq results (jiralib2-session-call (format fmt project-key max-results offset))
+          users (append users results)
+          offset (+ offset max-results))
+    (while (= (length results) max-results)
+      (setq results (jiralib2-session-call (format fmt project-key max-results offset))
+            users (append users results)
+            offset (+ offset max-results))
+      )
+    users))
+
 (defvar jiralib2--users-cache nil)
 (defun jiralib2-get-users (project-key)
   "Return assignable users information given the PROJECT-KEY."
+
   (or jiralib2--users-cache
-      (jiralib2-session-call
-       (format "/rest/api/2/user/assignable/search?project=%s&maxResults=1000"
-               project-key))))
+      (jiralib2--get-users project-key)))
 
 (defun jiralib2-get-assignable-users (issue-key)
   "Get the assignable users for ISSUE-KEY."
-  (jiralib2-session-call
-   (format "/rest/api/2/user/assignable/search?issueKey=%s&maxResults=1000"
-           issue-key)))
+  (let ((offset 0)
+        (users nil)
+        (max-results 1000)
+        (results nil)
+        (fmt "/rest/api/2/user/assignable/search?issueKey=%s&maxResults=%d&startAt%d"))
+
+    (setq results (jiralib2-session-call (format fmt issue-key max-results offset))
+          users (append users results)
+          offset (+ offset max-results))
+
+    (while (= (length results) max-results)
+      (setq results (jiralib2-session-call (format fmt issue-key max-results offset))
+            users (append users results)
+            offset (+ offset max-results))
+      )
+    users))
+
 
 (defun jiralib2-assign-issue (issue-key username)
   "Assign issue with ISSUE-KEY to USERNAME."
