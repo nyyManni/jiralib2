@@ -149,10 +149,10 @@
   (interactive)
   (let ((info (jiralib2-get-user-info)))
     (message
-     "Successfully logged in\n\nUsername:  %s\nFull Name: %s\nEmail:     %s"
-     (alist-get 'name info)
+     "Successfully logged in\n\nFull Name:  %s\nEmail:      %s\nAccount ID: %s\n"
      (alist-get 'displayName info)
-     (alist-get 'emailAddress info))))
+     (alist-get 'emailAddress info)
+     (alist-get 'accountId info))))
 
 (defun jiralib2--session-call (path args)
   "Do a call to PATH with ARGS using current session.
@@ -240,7 +240,8 @@ If no session exists, or it has expired, login first."
   "Return assignable users information given the PROJECT-KEY."
 
   (or jiralib2--users-cache
-      (jiralib2--get-users project-key)))
+      (setq jiralib2--users-cache 
+            (jiralib2--get-users project-key))))
 
 (defun jiralib2-get-assignable-users (issue-key)
   "Get the assignable users for ISSUE-KEY."
@@ -262,11 +263,11 @@ If no session exists, or it has expired, login first."
     users))
 
 
-(defun jiralib2-assign-issue (issue-key username)
-  "Assign issue with ISSUE-KEY to USERNAME."
+(defun jiralib2-assign-issue (issue-key account-id)
+  "Assign issue with ISSUE-KEY to account-id."
   (jiralib2-session-call (format "/rest/api/2/issue/%s/assignee" issue-key)
                          :type "PUT"
-                         :data (json-encode `((name . ,username)))))
+                         :data (json-encode `((accountId . ,username)))))
 
 (defun jiralib2-do-jql-search (jql &optional limit)
   "Run a JQL query and return the list of issues that matched.
