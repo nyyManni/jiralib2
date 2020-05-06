@@ -62,6 +62,11 @@
   :group 'jiralib2
   :type 'string)
 
+(defcustom jiralib2-user-account-id nil
+  "Account ID to use for calls to JIRA API."
+  :group 'jiralib2
+  :type 'string)
+
 (defcustom jiralib2-auth 'cookie
   "Authentication mode for JIRA."
   :group 'jiralib2
@@ -143,6 +148,10 @@
 (defun jiralib2-get-user-info ()
   "Fetch information on currently logged in user."
   (jiralib2-session-call "/rest/api/2/myself"))
+
+(defun jiralib2-get-user-account-id ()
+  "Fetch Account ID of currently logged in user."
+  (cdr (assoc 'accountId (jiralib2-session-call "/rest/api/2/myself"))))
 
 (defun jiralib2-verify-setup ()
   "Verify that server and login are configured correctly."
@@ -267,7 +276,7 @@ If no session exists, or it has expired, login first."
   "Assign issue with ISSUE-KEY to account-id."
   (jiralib2-session-call (format "/rest/api/2/issue/%s/assignee" issue-key)
                          :type "PUT"
-                         :data (json-encode `((accountId . ,username)))))
+                         :data (json-encode `((accountId . ,account-id)))))
 
 (defun jiralib2-do-jql-search (jql &optional limit)
   "Run a JQL query and return the list of issues that matched.
