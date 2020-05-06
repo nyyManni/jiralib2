@@ -398,6 +398,22 @@ ARGS is an association list of the fields to set for the issue."
   "Change the issue type of ISSUE-ID to TYPE."
   (jiralib2-update-issue issue-id `(issuetype . ((name . ,type)))))
 
+(defun jiralib2-if-plan-issue (issue-id datestring)
+  "Plan issue for next week and IntraFind PSO team"
+  (jiralib2-session-call (format "/rest/api/2/issue/%s" issue-id)
+                         :type "PUT"
+                         :data (json-encode
+                                `((fields . ((customfield_10131  ((value . "Ja")))
+                                             (customfield_10122 . ,datestring)))))))
+
+(defun jiralib2-if-unplan-issue(issue-id)
+  "Unplan issue, removing toggle and date."
+  (jiralib2-session-call (format "/rest/api/2/issue/%s" issue-id)
+                         :type "PUT"
+                         :data (json-encode
+                                `((fields . ((customfield_10131  ((value . ,json-null)))
+                                             (customfield_10122 . ,json-null)))))))
+
 (defun jiralib2-board-issues (board-id args)
   "Get issues of board BOARD-ID. Restrict the fetched fields with ARGS."
   (alist-get 'issues
