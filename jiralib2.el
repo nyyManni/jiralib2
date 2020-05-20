@@ -94,7 +94,7 @@
                              (read-passwd (format "Password or token for user %s: "
                                                   username)))))
           (cond ((member jiralib2-auth '(basic token))
-                 (base64-encode-string (format "%s:%s" username password)))
+                 (base64-encode-string (format "%s:%s" username password) t))
                 ((eq jiralib2-auth 'cookie)
                  (let* ((json-array-type jiralib2-json-array-type)
                         (reply-data
