@@ -167,6 +167,9 @@ Does not check for session validity."
                                                            jiralib2--session)))))
            :sync t
            :parser 'json-read
+           :error
+(cl-function (lambda (&rest args &key error-thrown &allow-other-keys)
+                (message "Got error: %S %S" error-thrown args))) 
            args)))
 
 (defun jiralib2-session-call (path &rest args)
