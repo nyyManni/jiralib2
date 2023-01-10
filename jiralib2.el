@@ -67,6 +67,7 @@
   :group 'jiralib2
   :type '(choice
 	  (const :tag "Cookie authentication" cookie)
+          (const :tag "Bearer authentication" bearer)
 	  (const :tag "Token authentication" token)
 	  (const :tag "Basic authentication" basic)))
 
@@ -87,14 +88,17 @@
   (interactive)
   (setq jiralib2--session
         (let* ((username (or username
+                            (eq jiralib2-auth 'bearer)
                              jiralib2-user-login-name
                              (read-string "Username: ")))
                (password (or password
-                             (and (eq jiralib2-auth 'token) jiralib2-token)
+                             (and (member jiralib2-auth '(bearer token)) jiralib2-token)
                              (read-passwd (format "Password or token for user %s: "
                                                   username)))))
           (cond ((member jiralib2-auth '(basic token))
                  (base64-encode-string (format "%s:%s" username password) t))
+               ((eq jiralib2-auth 'bearer)
+                jiralib2-token)
                 ((eq jiralib2-auth 'cookie)
                  (let* ((json-array-type jiralib2-json-array-type)
                         (reply-data
@@ -162,6 +166,9 @@ Does not check for session validity."
            :headers `(("Content-Type" . "application/json")
                       ,(cond ((eq jiralib2-auth 'cookie)
                               `("cookie" . ,jiralib2--session))
+                            ((eq jiralib2-auth 'bearer)
+                              `("Authorization" . ,(format "Bearer %s"
+                                                           jiralib2--session)))
                              ((member jiralib2-auth '(basic token))
                               `("Authorization" . ,(format "Basic %s"
                                                            jiralib2--session)))))
